@@ -8,7 +8,7 @@ export class AuthService{
     constructor(private prisma : PrismaService){}
 
     signup(){
-        return {msg : 'I am signed up'}
+        return {msg : 'I have signed up'}
     }
     
     signin(){
