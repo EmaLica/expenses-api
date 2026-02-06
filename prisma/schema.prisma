@@ -12,3 +12,48 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email     String   @unique
+  hash      String
+
+  firstName String?
+  lastName  String?
+
+  // One to many
+  expenses  Expense[]
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  title       String
+  description String?
+
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("EUR")
+
+  date        DateTime
+
+  //foreign key 
+  userId      Int
+  // Relazione Prisma:
+  // - fields: campo locale
+  // - references: campo referenziato
+  // - onDelete: se un utente viene cancellato,
+  //   tutte le sue spese vengono eliminate
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Migliora le query del tipo:
+  // "tutte le spese di un utente"
+  @@index([userId])
+  // Migliora filtri per data (es: mese corrente)
+  @@index([date])
+}
+
