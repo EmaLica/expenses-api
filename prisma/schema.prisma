@@ -26,6 +26,8 @@ model User {
 
   // One to many
   expenses  Expense[]
+
+  @@map("users")
 }
 
 model Expense {
@@ -55,5 +57,7 @@ model Expense {
   @@index([userId])
   // Migliora filtri per data (es: mese corrente)
   @@index([date])
+
+  @@map("expenses")
 }
 
