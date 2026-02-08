@@ -16,9 +16,8 @@ export class AuthController{
         //     typeOfPassword: typeof password, 
         // })
         //Uso classvalidator e classtransformer
-    signup(@Body() dto : AuthDto){
-        console.log(dto);
-        return this.AuthService.signup()
+    signup(@Body() AuthDto : AuthDto){
+        return this.AuthService.signup(AuthDto)
     }
 
     @Post('signin')
