@@ -1,98 +1,232 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Expenses Tracker API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A personal finance tracking API built with NestJS and PostgreSQL. Designed both as a practical tool for managing personal expenses and as a showcase of serious backend architecture patterns.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+| Layer | Technology |
+|-------|-----------|
+| Backend | NestJS (v11) |
+| Database | PostgreSQL 16 |
+| ORM | Prisma (v5) |
+| Auth | JWT + Argon2 |
+| Frontend *(planned)* | Next.js / React |
+| Caching *(planned)* | Redis |
+| Deployment | Docker + VPS |
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+### Implemented
+- [x] User registration with email/password validation
+- [x] Password hashing with Argon2
+- [x] Duplicate email detection with proper error handling
+- [x] Global `ValidationPipe` with whitelist (blocks unexpected fields)
+- [x] Prisma ORM integration with PostgreSQL
+- [x] Database schema: `users` and `expenses` tables with relations
+- [x] Docker Compose setup for local development database
 
-```bash
-$ yarn install
+### In Progress
+- [ ] JWT token generation on signin
+- [ ] Auth guards for protected routes
+
+### Planned
+- [ ] Full JWT authentication flow (access + refresh tokens)
+- [ ] Expense CRUD (`POST`, `GET`, `PATCH`, `DELETE /expenses`)
+- [ ] Expense categories
+- [ ] User profile management
+- [ ] Monthly budget tracking
+- [ ] Monthly spending charts (aggregated stats endpoint)
+- [ ] CSV export
+- [ ] Swagger / OpenAPI documentation
+- [ ] Rate limiting
+- [ ] Redis caching
+- [ ] Unit tests (services)
+- [ ] E2E tests (API flows)
+
+## Project Structure
+
+```
+src/
+├── auth/               # Auth module (signup, signin)
+│   ├── dto/            # Validated request DTOs
+│   ├── auth.controller.ts
+│   ├── auth.service.ts
+│   └── auth.module.ts
+├── user/               # User module (planned)
+├── expense/            # Expense module (planned)
+├── prisma/             # Global Prisma service
+├── app.module.ts
+└── main.ts
+
+prisma/
+├── schema.prisma       # Database schema
+└── migrations/         # Applied migrations
 ```
 
-## Compile and run the project
+## Database Schema
 
-```bash
-# development
-$ yarn run start
+```prisma
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  hash      String
+  firstName String?
+  lastName  String?
+  expenses  Expense[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-# watch mode
-$ yarn run start:dev
+  @@map("users")
+}
 
-# production mode
-$ yarn run start:prod
+model Expense {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String   @default("EUR")
+  date        DateTime
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("expenses")
+}
 ```
 
-## Run tests
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- Docker & Docker Compose
+
+### Installation
 
 ```bash
-# unit tests
-$ yarn run test
+# Clone the repository
+git clone https://github.com/your-username/expenses-api.git
+cd expenses-api
 
-# e2e tests
-$ yarn run test:e2e
+# Install dependencies
+npm install
 
-# test coverage
-$ yarn run test:cov
+# Start the database
+docker compose up -d
+
+# Apply migrations
+npx prisma migrate dev
+
+# Start the development server
+npm run start:dev
 ```
 
-## Deployment
+The API will be available at `http://localhost:3000`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Environment Variables
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Create a `.env` file in the root:
+
+```env
+DATABASE_URL="postgresql://postgres:123@localhost:5434/expensestracker"
+JWT_SECRET="your-secret-here"
+PORT=3000
+```
+
+## API Endpoints
+
+### Auth
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/auth/signup` | Register a new user | Public |
+| `POST` | `/auth/signin` | Login and get JWT | Public |
+
+#### `POST /auth/signup`
+
+```json
+{
+  "email": "user@example.com",
+  "password": "strongpassword"
+}
+```
+
+#### `POST /auth/signin`
+
+```json
+{
+  "email": "user@example.com",
+  "password": "strongpassword"
+}
+```
+
+### Expenses *(planned)*
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/expenses` | List all user expenses | JWT |
+| `POST` | `/expenses` | Create a new expense | JWT |
+| `GET` | `/expenses/:id` | Get expense by ID | JWT |
+| `PATCH` | `/expenses/:id` | Update expense | JWT |
+| `DELETE` | `/expenses/:id` | Delete expense | JWT |
+| `GET` | `/expenses/stats/monthly` | Monthly summary | JWT |
+| `GET` | `/expenses/export/csv` | Export to CSV | JWT |
+
+### Users *(planned)*
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/users/me` | Get current user profile | JWT |
+| `PATCH` | `/users/me` | Update profile | JWT |
+| `DELETE` | `/users/me` | Delete account | JWT |
+
+## Running Tests
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Docker
 
-## Resources
+```bash
+# Start only the database (development)
+docker compose up -d
 
-Check out a few resources that may come in handy when working with NestJS:
+# Stop the database
+docker compose down
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+A full `docker-compose.yml` including the API service and Redis is planned for production deployment.
 
-## Support
+## Architecture Highlights
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Module-based structure** — each domain (auth, user, expense) is an isolated NestJS module
+- **Global PrismaModule** — single database connection shared across all modules
+- **DTO validation** — all incoming data is validated and whitelisted before reaching service layer
+- **Argon2 hashing** — more secure than bcrypt for password storage
+- **Prisma migrations** — versioned, reproducible database schema changes
 
-## Stay in touch
+## Roadmap
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+1. Complete JWT auth (access + refresh token rotation)
+2. Implement expense CRUD with ownership guards
+3. Add categories to expenses
+4. Monthly stats aggregation endpoint
+5. CSV export
+6. Swagger documentation
+7. Redis caching for stats endpoints
+8. Rate limiting on auth endpoints
+9. Full test coverage (unit + e2e)
+10. Production Docker Compose + VPS deployment guide
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT
