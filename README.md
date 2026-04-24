@@ -17,23 +17,26 @@ A personal finance tracking API built with NestJS and PostgreSQL. Designed both 
 ## Features
 
 ### Implemented
-- [x] User registration with email/password validation
+- [x] User registration (`POST /auth/signup`) with email/password validation
 - [x] Password hashing with Argon2
-- [x] Duplicate email detection with proper error handling
-- [x] Global `ValidationPipe` with whitelist (blocks unexpected fields)
+- [x] Duplicate email detection — Prisma P2002 → `403 ForbiddenException`
+- [x] User signin (`POST /auth/signin`) — credential lookup + Argon2 verify
+- [x] Global `ValidationPipe` with whitelist (strips unexpected fields)
 - [x] Prisma ORM integration with PostgreSQL
 - [x] Database schema: `users` and `expenses` tables with relations
+- [x] Expense table indexes on `userId` and `date` for query performance
 - [x] Docker Compose setup for local development database
+- [x] Empty module scaffolding: `UserModule`, `ExpenseModule`
 
 ### In Progress
-- [ ] JWT token generation on signin
+- [ ] JWT access token returned on signin (`@nestjs/jwt` not yet installed)
 - [ ] Auth guards for protected routes
 
 ### Planned
 - [ ] Full JWT authentication flow (access + refresh tokens)
 - [ ] Expense CRUD (`POST`, `GET`, `PATCH`, `DELETE /expenses`)
 - [ ] Expense categories
-- [ ] User profile management
+- [ ] User profile management (`GET /users/me`, `PATCH /users/me`, `DELETE /users/me`)
 - [ ] Monthly budget tracking
 - [ ] Monthly spending charts (aggregated stats endpoint)
 - [ ] CSV export
@@ -141,7 +144,7 @@ PORT=3000
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
 | `POST` | `/auth/signup` | Register a new user | Public |
-| `POST` | `/auth/signin` | Login and get JWT | Public |
+| `POST` | `/auth/signin` | Validate credentials (JWT pending) | Public |
 
 #### `POST /auth/signup`
 
