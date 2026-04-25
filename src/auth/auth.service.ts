@@ -3,12 +3,14 @@ import * as argon from 'argon2';
 import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 
 //Injectable cosi possiamo usare dependency injection
 @Injectable({})
 export class AuthService{
 
-    constructor(private prisma : PrismaService){}
+    constructor(private prisma : PrismaService, private jwt : JwtService, private config: ConfigService){}
 
     async signup(AuthDto: AuthDto){
         //bcrypt (72 bytes) 
@@ -28,8 +30,6 @@ export class AuthService{
                 createdAt: true,
             } 
         });
-
-        //delete user.hash
 
         return user
     } catch (error) {
@@ -64,10 +64,26 @@ export class AuthService{
             'Credentials are incorrect'
         )
 
-        // uso destructuring per estrarre hash e restituire l'utente senza di esso
-        // non possiamo usare select nella query perché hash serve per argon.verify sopra
-        const { hash, ...userWithoutHash } = user;
-        return userWithoutHash;
+        return this.signToken(user.id, user.email)
+    }
+
+    async signToken(userId: number, email :string): Promise<{access_token: string}>{
+        const payload = {
+            sub: userId,
+            email
+        }
+
+        const secret = this.config.get('JWT_SECRET')
+
+        const token = await this.jwt.signAsync(payload, {
+            //dopo 15 min token scade e l'utente deve rifare l'accesso
+            expiresIn: '15m',
+            secret: secret
+        })
+
+        return {
+            access_token: token
+        }
     }
 
 }
