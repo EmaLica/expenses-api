@@ -64,15 +64,10 @@ export class AuthService{
             'Credentials are incorrect'
         )
 
-        /* select: {
-                id: true,
-                email: true,
-                createdAt: true,
-            }  */
-
-        //return user
-        
-        return {msg : 'I am signin in'}
+        // uso destructuring per estrarre hash e restituire l'utente senza di esso
+        // non possiamo usare select nella query perché hash serve per argon.verify sopra
+        const { hash, ...userWithoutHash } = user;
+        return userWithoutHash;
     }
 
 }
