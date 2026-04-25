@@ -132,8 +132,8 @@ The API will be available at `http://localhost:3000`.
 Create a `.env` file in the root:
 
 ```env
-DATABASE_URL="postgresql://postgres:123@localhost:5434/expensestracker"
-JWT_SECRET="your-secret-here"
+DATABASE_URL="postgresql://<user>:<password>@localhost:5434/expensestracker"
+JWT_SECRET="<your-strong-secret>"
 PORT=3000
 ```
 
