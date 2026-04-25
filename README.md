@@ -29,7 +29,7 @@ A personal finance tracking API built with NestJS and PostgreSQL. Designed both 
 - [x] Empty module scaffolding: `UserModule`, `ExpenseModule`
 
 ### In Progress
-- [ ] JWT access token returned on signin (`@nestjs/jwt` not yet installed)
+- [x] JWT access token returned on signin
 - [ ] Auth guards for protected routes
 
 ### Planned
@@ -163,6 +163,10 @@ PORT=3000
   "password": "strongpassword"
 }
 ```
+
+On valid credentials, the server responds with `201 Created` and returns a signed JWT ready to be used in authenticated requests.
+
+![JWT signin response](docs/images/ExpensesApiJWT.png)
 
 ### Expenses *(planned)*
 
